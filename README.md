@@ -55,6 +55,83 @@ To prepare the project for production deployment, please use the following comma
 npm start
 ```
 
+## Current route:
+
+```bash
+
+POST /admin/login
+Description: Authenticates an admin and returns a token.
+Requires: None
+Headers: CORS enabled
+
+POST /admin/signup
+Description: Registers a new admin user.
+Requires: Admin details in request body
+Headers: CORS enabled
+User Routes
+
+POST /users/signup
+Description: Registers a new user.
+Requires: User details in request body
+Headers: CORS enabled
+
+POST /users/login
+Description: Authenticates a user and returns a token.
+Requires: Username and password in request body
+Headers: CORS enabled
+
+GET /users/:userId
+Description: Retrieves user information by user ID.
+Requires: Token in the Authorization header
+Headers: CORS enabled
+
+PUT /users/:userId
+Description: Updates user information by user ID.
+Requires: Token in the Authorization header, user details in request body
+Headers: CORS enabled
+
+DELETE /users/:userId
+Description: Deletes a user by user ID.
+Requires: Token in the Authorization header
+Headers: CORS enabled
+Post Routes
+
+GET /posts
+Description: Retrieves a list of posts.
+Requires: Token in the Authorization header
+Headers: CORS enabled
+
+GET /posts/:postId
+Description: Retrieves a specific post by post ID.
+Requires: Token in the Authorization header
+Headers: CORS enabled
+
+POST /posts
+Description: Creates a new post.
+Requires: Token in the Authorization header, post details in request body
+Headers: CORS enabled
+
+PUT /posts/:postId
+Description: Updates a post by post ID.
+Requires: Token in the Authorization header, post details in request body
+Headers: CORS enabled
+
+PATCH /posts/:postId/active
+Description: Toggles the active status of a post by post ID.
+Requires: Token in the Authorization header
+Headers: CORS enabled
+
+POST /posts/:postId/comments
+Description: Adds a comment to a post by post ID.
+Requires: Token in the Authorization header, comment details in request body
+Headers: CORS enabled
+
+DELETE /posts/:postId
+Description: Deletes a post by post ID.
+Requires: Token in the Authorization header
+Headers: CORS enabled
+```
+
 ## Tech stack:
 + [Node](https://nodejs.org/en) as runtime environment. <br>
 + [Express](https://expressjs.com/) as backend framework. <br>

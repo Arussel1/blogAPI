@@ -5,10 +5,6 @@ import { user } from './../controllers/user';
 import { post, comment } from './../controllers/post';
 const router = express.Router();
 
-router.get('/', (req, res, next) => {
-    res.status(200).json("Hello World");
-  });
-
 router.post('/admin/login', cors(), admin.login);
 
 router.post('/admin/signup', cors(), admin.create);
