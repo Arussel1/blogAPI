@@ -1,49 +1,62 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import { ExtractJwt, Strategy as JWTStrategy} from 'passport-jwt';
-// import { UserModel } from './models/UserModel'; // Adjust the import path as needed
-import { Request, Response, NextFunction } from 'express';
+import { ExtractJwt, Strategy as JWTStrategy } from 'passport-jwt';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import { UserQueries, Role } from './../config/queries'; 
 
-interface User {
-  id: string;
-  email: string;
-  password: string;
-  // Add other fields as necessary
-}
+dotenv.config();
 
-passport.use(new LocalStrategy({
-    usernameField: 'email',
-    passwordField: 'password'
-  },
-  async function (email: string, password: string, done: (error: any, user?: User | false, options?: { message: string }) => void) {
-    
-    try {
-   /*   const user = await UserModel.findOne({ email, password }).exec();
-      
-      if (!user) {
-        return done(null, false, { message: 'Incorrect email or password.' });
+const userQueries = new UserQueries();
+
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: 'username',
+      passwordField: 'password',
+    },
+    async (username, password, done) => {
+      try {
+        const user = await userQueries.getUser(username);
+        if (!user) {
+          return done(null, false, { message: 'Username does not exist' });
+        }
+
+        if (user.role !== Role.ADMIN) {
+          return done(null, false, { message: 'Your account does not meet the required permissions' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return done(null, false, { message: 'Incorrect password' });
+        }
+
+        return done(null, user);
+      } catch (err) {
+        return done(err);
       }
-      
-      return done(null, user, { message: 'Logged In Successfully' }); */
-    } catch (err) {
-      return done(err);
     }
-  }
-));
+  )
+);
 
-passport.use(new JWTStrategy({
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey : 'your_jwt_secret'
-},
-function (jwtPayload, cb) {
+passport.use(
+  new JWTStrategy(
+    {
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.FOO_COOKIE_SECRET as string,
+    },
+    async (jwtPayload, done) => {
+      try {
+        const user = await userQueries.getUserById(jwtPayload.id);
+        if (!user) {
+          return done(null, false);
+        }
+        return done(null, user);
+      } catch (err) {
+        return done(err, false);
+      }
+    }
+  )
+);
 
-    //find the user in db if needed. This functionality may be omitted if you store everything you'll need in JWT payload.
- /*   return UserModel.findOneById(jwtPayload.id)
-        .then(user => {
-            return cb(null, user);
-        })
-        .catch(err => {
-            return cb(err);
-        }); */
-}
-));
+export default passport;

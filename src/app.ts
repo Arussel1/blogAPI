@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
 import createError from 'http-errors';
-import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import expressSession from 'express-session';
@@ -11,19 +10,13 @@ import  { PrismaClient } from '@prisma/client';
 
 import './config/passport'
 import indexRouter from './routes/index';
-import usersRouter from './routes/users';
-import authRouter from './routes/auth';
 
 const app = express();
-
-app.set('views', path.join(__dirname, './../views')); 
-app.set('view engine', 'pug');
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, './../public')));
 
 app.use(
   expressSession({
@@ -45,24 +38,24 @@ app.use(
 );
 
 app.use('/', indexRouter);
-app.use('/auth', authRouter);
-app.use('/users', passport.authenticate('jwt', {session: false}), /* user */);
 
-// catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
 
 
 // error handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) =>{
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const statusCode = (err.status && typeof err.status === 'number') ? err.status : 500;
+  
+  // Log the error (optional, for debugging purposes)
+  console.error(err);
 
-  // render the error page
-  res.status((err as any).status || 500);
-  res.render('error');
+  res.status(statusCode).json({
+    error: {
+      message: err.message || 'Internal Server Error',
+      details: req.app.get('env') === 'development' ? err : {}
+    }
+  });
 });
-
 export default app;
