@@ -44,13 +44,15 @@ passport.use(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.FOO_COOKIE_SECRET as string,
+      passReqToCallback: true,
     },
-    async (jwtPayload, done) => {
+    async (req, jwtPayload, done) => {
       try {
         const user = await userQueries.getUserById(jwtPayload.id);
         if (!user) {
           return done(null, false);
         }
+        req.user = user;
         return done(null, user);
       } catch (err) {
         return done(err, false);

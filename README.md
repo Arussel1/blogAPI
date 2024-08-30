@@ -17,7 +17,7 @@ git clone https://github.com/YourUserName/simplified-google-drive
 2. Navigate to the project folder:<br>
 
 ```bash
-cd simplified-google-drive
+cd blogAPI
 ```
 
 3. Install the dependencies:<br>

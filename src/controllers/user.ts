@@ -131,7 +131,7 @@ const user = {
             return res.status(500).json({ message: 'Internal Server Error: Missing secret key' });
           }
           const token = jwt.sign({ id: user.id }, secret, { expiresIn: '1h' });
-          return res.json({ user, token });
+          return res.json({  token });
         });
       })(req, res, next); 
     },

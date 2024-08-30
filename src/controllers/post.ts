@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { PostQueries, Post, UserQueries } from './../config/queries';
+import { PostQueries, UserQueries, User, CommentQueries } from './../config/queries';
 import { body, validationResult } from 'express-validator';
 
 const postQueries = new PostQueries();
 const userQueries = new UserQueries();
+const commentQueries = new CommentQueries();
 
 const post = {
     list: async (req: Request, res: Response) => {
@@ -13,7 +14,7 @@ const post = {
         const author = await userQueries.getUserById(Number(post.authorId));
     return {
         ...post,
-        authorName: author ? author.firstname + " " + author.lastname : 'Unknown', // Add author's name to the post
+        authorName: author ? author.firstname + " " + author.lastname : 'Unknown', 
     };
 }));
         return res.status(200).json(postsWithAuthors);
@@ -22,12 +23,153 @@ const post = {
           return res.status(500).json({ message: "Internal server error" });
         }
     },
+
+    listSpecific: async (req: Request, res: Response) => {
+        try {
+          const postId = Number(req.params.postId);
+      
+          const post = await postQueries.getPostById(postId);
+          if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+          }
+
+          const author = await userQueries.getUserById(Number(post.authorId));
+          
+          const postWithAuthor = {
+            ...post,
+            authorName: author ? `${author.firstname} ${author.lastname}` : 'Unknown',
+          };
+          const comment = await commentQueries.getCommentByPostId(postId);
+      
+          return res.status(200).json({post: postWithAuthor, comment});
+        } catch (error) {
+          console.error("Error fetching post info:", error);
+          return res.status(500).json({ message: "Internal server error" });
+        }
+      },
+
     new: [
         body('title', 'Title must not be empty.').trim().isLength({ min: 1 }),
+
         body('content', 'Blog body must be a minimum of 3 characters')
         .trim()
         .isLength({ min: 3 }),
+
+        async (req: Request, res: Response) => {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+              return res.status(400).json( {errors: errors.array()})
+            }
+            
+            try {
+            const { title, content, published } = req.body;
+            const authorId = (req.user as User).id;
+            const success = await postQueries.addPost( authorId, title, content, published);
+                if(success) {
+                        return res.status(201).json({
+                        mesaage: 'Post created sucessfully'
+                    });
+                }
+                } catch (error) {
+                console.error('Error during creating post:', error);
+                return res.status(500).json({
+                    errors: [{ msg: 'An error occurred during creating post. Please try again.' }],});
+                }
+            }
+    ],
+    update: [
+        body('title', 'Title must not be empty.').trim().isLength({ min: 1 }),
+
+        body('content', 'Blog body must be a minimum of 3 characters')
+        .trim()
+        .isLength({ min: 3 }),
+
+        async (req: Request, res: Response) => {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+              return res.status(400).json( {errors: errors.array()})
+            }
+            
+            try {
+            const { title, content } = req.body;
+            const postId = Number(req.params.postId);
+            const authorId = (req.user as User).id;
+            const success = await postQueries.updatePost( postId, authorId, title, content);
+                if(success) {
+                        return res.status(201).json({
+                        mesaage: 'Post updated sucessfully'
+                    });
+                }
+                } catch (error) {
+                console.error('Error during updating post:', error);
+                return res.status(500).json({
+                    errors: [{ msg: 'An error occurred during updating post. Please try again.' }],});
+                }
+            }
+    ],
+    changeStatus: async (req: Request, res: Response) => {
+        try {
+            const postId = Number(req.params.postId);
+            const success = await postQueries.changeStatus( postId );
+                if(success) {
+                        return res.status(201).json({
+                        mesaage: 'Change status sucessfully'
+                    });
+                }else{
+                    throw new Error("Cannot find post")
+                }
+                } catch (error) {
+                console.error('Error during changing status:', error);
+                return res.status(500).json({
+                    errors: [{ msg: 'An error occurred during changing status. Please try again.' }],});
+        }
+    },
+    delete: async (req: Request, res: Response) => {
+        try {
+            const postId = Number(req.params.postId);
+            const success = await postQueries.deletePost( postId );
+                if(success) {
+                        return res.status(201).json({
+                        mesaage: 'Post delete sucessfully'
+                    });
+                }
+                } catch (error) {
+                console.error('Error during deleting post:', error);
+                return res.status(500).json({
+                    errors: [{ msg: 'An error occurred during deleting post. Please try again.' }],});
+        }
+    },
+}
+
+const comment = {
+    create: [
+        body('content', 'Blog body must be a minimum of 3 characters')
+        .trim()
+        .isLength({ min: 3 }),
+
+        async (req: Request, res: Response) => {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+              return res.status(400).json( {errors: errors.array()})
+            }
+            
+            try {
+            const { content } = req.body;
+            const authorId = (req.user as User).id;
+            const postId = Number(req.params.postId);
+            const success = await commentQueries.addComment( authorId, postId, content);
+                if(success) {
+                        return res.status(201).json({
+                        mesaage: 'Comment created sucessfully'
+                    });
+                }
+                } catch (error) {
+                console.error('Error during creating comment:', error);
+                return res.status(500).json({
+                    errors: [{ msg: 'An error occurred during creating comment. Please try again.' }],});
+                }
+            }
     ]
 }
 
-export { post }
+export { post, comment }

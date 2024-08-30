@@ -14,6 +14,7 @@ export interface Post{
     createdAt: Date;
     content: string;
     authorId: number,
+    published: boolean
 }
 
 export interface Comment{
@@ -154,5 +155,131 @@ export class PostQueries {
             console.error("Error fetching post", error instanceof Error ? error.message : error);
             throw new Error("Internal server error");
         }
+    }
+    async addPost( authorId: number, title: string, content: string, published: boolean ): Promise<boolean> {
+      try {
+        const createPost = await this.prisma.post.create({
+          data: {
+            title,
+            content,
+            authorId,
+            published
+          }
+        });
+  
+        return !!createPost;
+      } catch (error) {
+        console.error("Error adding post:", error);
+        throw new Error("Internal server error"); 
+      }
+    }
+    async updatePost(postId: number, authorId: number, title: string, content: string ): Promise<Boolean> {
+      try {
+        const updatedPost = await this.prisma.post.update({
+          where: { id: postId },
+          data: {
+            authorId,
+            title,
+            content
+          },
+        });
+  
+        return !!updatedPost;
+      } catch (error) {
+        if (error instanceof Error) {
+          if ('code' in error && (error as any).code === 'P2025') {
+            console.error("Post not found:", error.message);
+            return false; 
+          }
+          console.error("Error updating post:", error.message);
+        }
+        throw new Error("Internal server error"); 
+      }
+    }
+    async changeStatus(postId: number): Promise<Boolean> {
+      try {
+        const post = await this.prisma.post.findUnique({
+          where: { id: postId },
+          select: { published: true },
+        });
+        if (!post) {
+          console.error("Post not found");
+          return false;
+        }
+        const updatedPost = await this.prisma.post.update({
+          where: { id: postId },
+          data: {
+            published: !post.published,
+          },
+        });
+  
+        return !!updatedPost;
+      } catch (error) {
+        if (error instanceof Error) {
+          if ('code' in error && (error as any).code === 'P2025') {
+            console.error("Post not found:", error.message);
+            return false; 
+          }
+          console.error("Error updating post:", error.message);
+        }
+        throw new Error("Internal server error"); 
+      }
+    }
+
+    async deletePost( postId: number):Promise<Boolean> {
+      try {
+        const deletedPost = await this.prisma.post.delete({
+          where: { id: postId },
+        });
+  
+        return !!deletedPost;
+      } catch (error) {
+        if (error instanceof Error) {
+          if ('code' in error && (error as any).code === 'P2025') {
+            console.error("Post not found:", error.message);
+            return false; 
+          }
+          console.error("Error deleting post:", error.message);
+        }
+        throw new Error("Internal server error"); 
+      }
+    } 
+}
+
+export class CommentQueries {
+  private prisma: PrismaClient;
+
+    constructor() {
+        this.prisma = new PrismaClient();
+    }
+
+    async addComment (authorId: number, postId: number, content: string): Promise<Boolean> {
+      try {
+        const createComment = await this.prisma.comment.create({
+          data: {
+            content,
+            postId,
+            authorId
+          }
+        });
+  
+        return !!createComment;
+      } catch (error) {
+        console.error("Error adding comment:", error);
+        throw new Error("Internal server error"); 
+      }
+    }
+    async getCommentByPostId (postId: number): Promise< Comment[] | null > {
+      try {
+        const comments = await this.prisma.comment.findMany({
+            where: {
+               postId
+            }
+        });
+        return comments;
+    } catch (error){
+        console.error("Error fetching comments", error instanceof Error ? error.message : error);
+        throw new Error("Internal server error");
+    }
     }
 }
