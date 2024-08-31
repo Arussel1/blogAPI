@@ -59,68 +59,33 @@ npm start
 
 ```bash
 
-POST /admin/login
-Description: Authenticates an admin and returns a token.
-Requires: None
-Headers: CORS enabled
+POST /admin/login: Authenticates an admin and returns a token.
 
-POST /admin/signup
-Description: Registers a new admin user.
-Requires: Admin details in request body
-Headers: CORS enabled
-User Routes
+POST /admin/signup: Registers a new admin user.
 
-POST /users/signup
-Description: Registers a new user.
-Requires: User details in request body
-Headers: CORS enabled
+POST /users/signup: Registers a new user.
 
-POST /users/login
-Description: Authenticates a user and returns a token.
-Requires: Username and password in request body
-Headers: CORS enabled
+POST /users/login: Authenticates a user and returns a token.
 
-GET /users/:userId
-Description: Retrieves user information by user ID.
-Requires: Token in the Authorization header
-Headers: CORS enabled
+GET /users/:userId: Retrieves user information by user ID.
 
-PUT /users/:userId
-Description: Updates user information by user ID.
-Requires: Token in the Authorization header, user details in request body
-Headers: CORS enabled
+PUT /users/:userId: Updates user information by user ID.
 
-DELETE /users/:userId
-Description: Deletes a user by user ID.
-Requires: Token in the Authorization header
-Headers: CORS enabled
-Post Routes
+DELETE /users/:userId: Deletes a user by user ID.
 
-GET /posts
-Description: Retrieves a list of posts.
-Requires: Token in the Authorization header
-Headers: CORS enabled
+GET /posts: Retrieves a list of posts.
 
 GET /posts/:postId: Retrieves a specific post by post ID.
 
-
 POST /posts: Creates a new post.
-
 
 PUT /posts/:postId: Updates a post by post ID.
 
 PATCH /posts/:postId: Toggles the active status of a post by post ID.
 
+POST /posts/:postId/comments: Adds a comment to a post by post ID.
 
-POST /posts/:postId/comments
-Description: Adds a comment to a post by post ID.
-Requires: Token in the Authorization header, comment details in request body
-Headers: CORS enabled
-
-DELETE /posts/:postId
-Description: Deletes a post by post ID.
-Requires: Token in the Authorization header
-Headers: CORS enabled
+DELETE /posts/:postId: Deletes a post by post ID.
 ```
 
 ## Tech stack:
