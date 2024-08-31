@@ -1,4 +1,5 @@
 import passport from 'passport';
+import { Request } from 'express';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { ExtractJwt, Strategy as JWTStrategy } from 'passport-jwt';
 import bcrypt from 'bcryptjs';
@@ -14,15 +15,16 @@ passport.use(
     {
       usernameField: 'username',
       passwordField: 'password',
+      passReqToCallback: true,
     },
-    async (username, password, done) => {
+    async (req: Request, username, password, done) => {
       try {
         const user = await userQueries.getUser(username);
         if (!user) {
           return done(null, false, { message: 'Username does not exist' });
         }
 
-        if (user.role !== Role.ADMIN) {
+        if (req.path.includes('/admin') && user.role !== Role.ADMIN) {
           return done(null, false, { message: 'Your account does not meet the required permissions' });
         }
 

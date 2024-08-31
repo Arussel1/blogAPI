@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import e, { Request, Response, NextFunction } from 'express';
 import { UserQueries, Role, User } from './../config/queries';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
@@ -159,5 +159,14 @@ const  verifyToken = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const user = await userQueries.getUserById((req.user as User).id);
+  if (!user || user.role !== Role.ADMIN){
+    res.status(401).json("No permission for this route");
+  } else{
+    next();
+  }
+    
+}
 
-export { admin, verifyToken}
+export { admin, verifyToken, isAdmin }

@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import {  admin, verifyToken } from './../controllers/admin';
+import {  admin, verifyToken, isAdmin } from './../controllers/admin';
 import { user } from './../controllers/user';
 import { post, comment } from './../controllers/post';
 const router = express.Router();
@@ -23,15 +23,15 @@ router.get('/posts', cors(), verifyToken, post.list);
 
 router.get('/posts/:postId', cors(), verifyToken, post.listSpecific);
 
-router.post('/posts', cors(), verifyToken, post.new);
+router.post('/posts', cors(), verifyToken, isAdmin, post.new);
 
- router.put('/posts/:postId', cors(), verifyToken, post.update);
+ router.put('/posts/:postId', cors(), verifyToken, isAdmin, post.update);
 
-router.patch('/posts/:postId/active', cors(), verifyToken, post.changeStatus);
+router.patch('/posts/:postId', cors(), verifyToken, isAdmin, post.changeStatus);
 
 router.post('/posts/:postId/comments', cors(), verifyToken, comment.create);
 
-router.delete('/posts/:postId', cors(), verifyToken, post.delete); 
+router.delete('/posts/:postId', cors(), verifyToken, isAdmin, post.delete); 
 
 
 export default router
