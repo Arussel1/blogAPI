@@ -140,7 +140,10 @@ const user = {
         try {
           const userId = Number(req.params.userId);
           const user = await userQueries.getUserById(userId);
-    
+          const userIdHeader = (req.user as User).id;
+          if( userIdHeader !== userId){
+            return res.status(401).json({ message: "Cannot view another user"});
+          }
           if (!user) {
             return res.status(404).json({ message: "User not found" });
           }
@@ -160,6 +163,10 @@ const user = {
         try {
           const { firstname, lastname, username, password } = req.body;
           const id = Number(req.params.userId);
+          const userId = (req.user as User).id;
+          if( id !== userId){
+            return res.status(401).json({ message: "Cannot change another user"});
+          }
           if (!firstname || !lastname || !username || !password) {
             return res.status(400).json({ message: "All fields are required" });
           }
@@ -186,11 +193,14 @@ const user = {
         try {
           const id = Number(req.params.userId);
           const deletedUser = await userQueries.deleteUser(id);
-    
+          const userId = (req.user as User).id;
+          if( id !== userId){
+            return res.status(401).json({ message: "Cannot delete another user"});
+          }
           if (!deletedUser) {
             return res.status(404).json({ message: "User not found" });
           }
-    
+          
           return res.status(200).json({ message: "User deleted successfully" });
         } catch (error) {
           console.error("Error deleting user:", error);
