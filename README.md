@@ -101,25 +101,16 @@ Description: Retrieves a list of posts.
 Requires: Token in the Authorization header
 Headers: CORS enabled
 
-GET /posts/:postId
-Description: Retrieves a specific post by post ID.
-Requires: Token in the Authorization header
-Headers: CORS enabled
+GET /posts/:postId: Retrieves a specific post by post ID.
 
-POST /posts
-Description: Creates a new post.
-Requires: Token in the Authorization header, post details in request body
-Headers: CORS enabled
 
-PUT /posts/:postId
-Description: Updates a post by post ID.
-Requires: Token in the Authorization header, post details in request body
-Headers: CORS enabled
+POST /posts: Creates a new post.
 
-PATCH /posts/:postId/active
-Description: Toggles the active status of a post by post ID.
-Requires: Token in the Authorization header
-Headers: CORS enabled
+
+PUT /posts/:postId: Updates a post by post ID.
+
+PATCH /posts/:postId: Toggles the active status of a post by post ID.
+
 
 POST /posts/:postId/comments
 Description: Adds a comment to a post by post ID.
