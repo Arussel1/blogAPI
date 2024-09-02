@@ -14,7 +14,8 @@ export interface Post{
     createdAt: Date;
     content: string;
     authorId: number,
-    published: boolean
+    published: boolean;
+    image: string;
 }
 
 export interface Comment{
