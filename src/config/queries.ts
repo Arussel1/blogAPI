@@ -156,14 +156,15 @@ export class PostQueries {
             throw new Error("Internal server error");
         }
     }
-    async addPost( authorId: number, title: string, content: string, published: boolean ): Promise<boolean> {
+    async addPost( authorId: number, title: string, content: string, published: boolean, image: string ): Promise<boolean> {
       try {
         const createPost = await this.prisma.post.create({
           data: {
             title,
             content,
             authorId,
-            published
+            published,
+            image
           }
         });
   

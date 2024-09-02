@@ -1,10 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { PostQueries, UserQueries, User, CommentQueries } from './../config/queries';
 import { body, validationResult } from 'express-validator';
+import { createClient } from '@supabase/supabase-js';
+import multer from 'multer';
 
+const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
 const postQueries = new PostQueries();
 const userQueries = new UserQueries();
 const commentQueries = new CommentQueries();
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, 
+  });
+  
 
 const post = {
     list: async (req: Request, res: Response) => {
@@ -49,34 +58,57 @@ const post = {
       },
 
     new: [
+        upload.single('image'),
         body('title', 'Title must not be empty.').trim().isLength({ min: 1 }),
-
-        body('content', 'Blog body must be a minimum of 3 characters')
-        .trim()
-        .isLength({ min: 3 }),
-
+        body('content', 'Blog body must be a minimum of 3 characters').trim().isLength({ min: 3 }),
+      
         async (req: Request, res: Response) => {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-              return res.status(400).json( {errors: errors.array()})
-            }
-            
-            try {
+          const errors = validationResult(req);
+          if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+          }
+      
+          try {
             const { title, content, published } = req.body;
             const authorId = (req.user as User).id;
-            const success = await postQueries.addPost( authorId, title, content, published);
-                if(success) {
-                        return res.status(201).json({
-                        mesaage: 'Post created sucessfully'
-                    });
-                }
-                } catch (error) {
-                console.error('Error during creating post:', error);
-                return res.status(500).json({
-                    errors: [{ msg: 'An error occurred during creating post. Please try again.' }],});
-                }
+            
+            if (!req.file) {
+              return res.status(400).json({ errors: [{ msg: 'Please upload a photo.' }] });
             }
-    ],
+      
+            const file = req.file;
+            const filePath = `posts/${Date.now()}_${file.originalname}`;
+            const { data: uploadData, error: uploadError } = await supabase.storage.from('blog').upload(filePath, file.buffer, {
+              contentType: file.mimetype,
+            });
+      
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw uploadError;
+            }
+      
+            const { data } = supabase.storage.from('blog').getPublicUrl(filePath);
+      
+            const publicURL = data.publicUrl;
+      
+            const success = await postQueries.addPost(authorId, title, content, published, publicURL);
+            if (success) {
+              return res.status(201).json({
+                message: 'Post created successfully',
+              });
+            } else {
+                return res.status(500).json({
+                  errors: [{ msg: 'Failed to create the post in the database.' }],
+                });
+              }
+          } catch (error) {
+            console.error('Error during creating post:', error);
+            return res.status(500).json({
+              errors: [{ msg: 'An error occurred during creating post. Please try again.' }],
+            });
+          }
+        },
+      ],
     update: [
         body('title', 'Title must not be empty.').trim().isLength({ min: 1 }),
 
