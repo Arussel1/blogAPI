@@ -28,34 +28,45 @@ const post = {
 }));
         return res.status(200).json(postsWithAuthors);
        } catch (error) {
-          console.error("Error fetching post info:", error);
           return res.status(500).json({ message: "Internal server error" });
         }
     },
 
     listSpecific: async (req: Request, res: Response) => {
-        try {
-          const postId = Number(req.params.postId);
-      
-          const post = await postQueries.getPostById(postId);
-          if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-          }
-
-          const author = await userQueries.getUserById(Number(post.authorId));
-          
-          const postWithAuthor = {
-            ...post,
-            authorName: author ? `${author.firstname} ${author.lastname}` : 'Unknown',
-          };
-          const comment = await commentQueries.getCommentByPostId(postId);
-      
-          return res.status(200).json({post: postWithAuthor, comment});
-        } catch (error) {
-          console.error("Error fetching post info:", error);
-          return res.status(500).json({ message: "Internal server error" });
+      try {
+        const postId = Number(req.params.postId);
+    
+        // Fetch the post by its ID
+        const post = await postQueries.getPostById(postId);
+        if (!post) {
+          return res.status(404).json({ message: "Post not found" });
         }
-      },
+    
+        // Fetch the post's author details
+        const author = await userQueries.getUserById(Number(post.authorId));
+        const postWithAuthor = {
+          ...post,
+          authorName: author ? `${author.firstname} ${author.lastname}` : 'Unknown',
+        };
+    
+        const comments = await commentQueries.getCommentByPostId(postId);
+        const commentsWithAuthors = comments
+        ? await Promise.all(
+          comments.map(async (comment) => {
+            const commentAuthor = await userQueries.getUserById(Number(comment.authorId));
+            return {
+              ...comment,
+              authorName: commentAuthor ? `${commentAuthor.firstname} ${commentAuthor.lastname}` : 'Unknown',
+            };
+          })
+        ) : [];
+    
+        return res.status(200).json({ post: postWithAuthor, comments: commentsWithAuthors });
+      } catch (error) {
+        console.error("Error fetching post info:", error);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+    },
 
     new: [
         upload.single('image'),
