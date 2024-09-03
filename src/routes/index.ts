@@ -29,9 +29,12 @@ router.post('/posts', cors(), verifyToken, isAdmin, post.new);
 
 router.patch('/posts/:postId', cors(), verifyToken, isAdmin, post.changeStatus);
 
+router.delete('/posts/:postId', cors(), verifyToken, isAdmin, post.delete); 
+
 router.post('/posts/:postId/comments', cors(), verifyToken, comment.create);
 
-router.delete('/posts/:postId', cors(), verifyToken, isAdmin, post.delete); 
+router.delete('/comments/:commentId', cors(), verifyToken, isAdmin, comment.delete); 
+
 
 
 export default router

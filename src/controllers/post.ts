@@ -213,7 +213,23 @@ const comment = {
                     errors: [{ msg: 'An error occurred during creating comment. Please try again.' }],});
                 }
             }
-    ]
+    ],
+    delete: async (req: Request, res: Response) => {
+      try {
+          const commentId = Number(req.params.commentId);
+          const success = await commentQueries.deleteComment( commentId );
+              if(success) {
+                      return res.status(201).json({
+                      mesaage: 'Comment delete sucessfully'
+                  });
+              }
+              } catch (error) {
+              console.error('Error during deleting comment:', error);
+              return res.status(500).json({
+                  errors: [{ msg: 'An error occurred during deleting comment. Please try again.' }],});
+      }
+  },
 }
+
 
 export { post, comment }

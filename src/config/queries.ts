@@ -132,11 +132,7 @@ export class PostQueries {
     }
     async getAllPosts(): Promise<Post[]>{
       try {
-          const posts = await this.prisma.post.findMany({
-              where: {
-                 published: true
-              }
-          });
+          const posts = await this.prisma.post.findMany();
           return posts;
       } catch (error){
           console.error("Error fetching posts", error instanceof Error ? error.message : error);
@@ -146,7 +142,7 @@ export class PostQueries {
     async getPostById( postId: number): Promise<Post | null> {
         try {
             const post =await this.prisma.post.findFirst({
-              where: { id: postId, published: true },
+              where: { id: postId },
               select: { id: true, title: true, createdAt: true, content: true, authorId: true, published: true, image: true },
             });
             return post;
@@ -199,8 +195,7 @@ export class PostQueries {
     async changeStatus(postId: number): Promise<Boolean> {
       try {
         const post = await this.prisma.post.findUnique({
-          where: { id: postId },
-          select: { published: true },
+          where: { id: postId }
         });
         if (!post) {
           console.error("Post not found");
@@ -282,4 +277,22 @@ export class CommentQueries {
         throw new Error("Internal server error");
     }
     }
+    async deleteComment( commentId: number):Promise<Boolean> {
+      try {
+        const deletedComment = await this.prisma.comment.delete({
+          where: { id: commentId },
+        });
+  
+        return !!deletedComment;
+      } catch (error) {
+        if (error instanceof Error) {
+          if ('code' in error && (error as any).code === 'P2025') {
+            console.error("Comment not found:", error.message);
+            return false; 
+          }
+          console.error("Error deleting Comment:", error.message);
+        }
+        throw new Error("Internal server error"); 
+      }
+    } 
 }
