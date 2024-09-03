@@ -1,6 +1,20 @@
 # Blog API
-Backend RESTful API of a blog website with Typescript, Node, Express, PostgreSQL, authentication with Passport local startegy + JWT and PrismaORM for database interactions.  <br>
-**Demo**: :point_right:[**Not yet ready**]():point_left:. <br>
+## Project Overview: 
+1. [BlogAPI](https://github.com/Arussel1/blogAPI): The backend of the blog application built using Node.js and Express, handling routes for posts, users, and comments.
+
+2. [BlogClient](https://github.com/Arussel1/blogClient): The user-facing client application built with React, TypeScript, and TailwindCSS. It allows users to:
+
+   + Create and log in to accounts.
+   + View posts.
+   + Post comments. 
+
+3. [AdminClient](https://github.com/Arussel1/blogAdmin): The admin-facing client with extended permissions, including:
+
+    + All user permissions from BlogClient.
+    + Creating and managing posts.
+    + Changing post status (e.g., publish/unpublish).
+    + Deleting comments. <br>
+**Demo**: :point_right:[**Click here**](https://blog-client-7nj1um41c-arussel1s-projects.vercel.app/):point_left:. <br>
 Please allow up to 1 minutes for the website to load.
 ## Install and set up
 Follow these step below to set up the website in your local machine.
