@@ -11,7 +11,7 @@ Ensure [Node](https://nodejs.org/en) and [npm](https://www.npmjs.comnode) are in
 1. Clone the repo: <br>
 
 ```bash
-git clone https://github.com/YourUserName/simplified-google-drive
+git clone https://github.com/YourUserName/blogAPI
 ```
 
 2. Navigate to the project folder:<br>
@@ -99,5 +99,6 @@ DELETE /posts/:postId: Deletes a post by post ID.
 + [Prisma](https://www.prisma.io/) Simplified database relation and query for SQL and NoSQL databases. <br>
 + [Postman](https://www.postman.com/) API platform for building, testing and using APIs. <br>
 + [JWT](https://www.npmjs.com/package/jsonwebtoken) Securely transmitting information between parties as a JSON object.
++ [Supabase](https://supabase.com/) Open-source Firebase alternative providing backend services like authentication, databases, and storage.
 ## Database design:
 ![DB design](image.png)
