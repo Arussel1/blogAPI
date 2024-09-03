@@ -37,6 +37,8 @@ touch .env
 ```bash
 DATABASE_URL=
 FOO_COOKIE_SECRET=
+SUPABASE_KEY=
+SUPABASE_URL=
 ```
 
 6. Start the dev server:<br>

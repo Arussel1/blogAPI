@@ -159,36 +159,72 @@ const user = {
         }
       },
     
-      update: async (req: Request, res: Response) => {
-        try {
-          const { firstname, lastname, username, password } = req.body;
-          const id = Number(req.params.userId);
-          const userId = (req.user as User).id;
-          if( id !== userId){
-            return res.status(401).json({ message: "Cannot change another user"});
-          }
-          if (!firstname || !lastname || !username || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-          }
-    
-          const updatedUser = await userQueries.updateUser(
-            id,
-            firstname,
-            lastname,
-            username,
-            password
-          );
-    
-          if (!updatedUser) {
-            return res.status(404).json({ message: "User not found" });
-          }
-    
-          return res.status(200).json({ message: "User updated successfully" });
-        } catch (error) {
-          console.error("Error updating user:", error);
-          return res.status(500).json({ message: "Internal server error" });
+      update: [
+        body('firstname')
+        .trim()
+        .notEmpty()
+        .withMessage('First name is required')
+        .escape(),
+    body('lastname')
+        .trim()
+        .notEmpty()
+        .withMessage('Last name is required')
+        .escape(),
+    body('username')
+        .trim()
+        .notEmpty()
+        .withMessage('Username is required')
+        .isLength({ min: 3, max: 20 })
+        .withMessage('Username must be between 3 and 20 characters long')
+        .matches(/^[a-zA-Z0-9_.]+$/)
+        .withMessage('Username must contain only letters, numbers, underscores, or periods')
+        .escape()
+        .custom( async (value) => {
+            const user = await userQueries.getUser(value);
+            if (user) {
+            throw new Error('Username already exists');
+            }
+            return true;
+        }),
+    body('password')
+        .notEmpty()
+        .withMessage('Password is required')
+        .isLength({ min: 8, max: 64 })
+        .withMessage('Password must be between 8 and 64 characters long')
+        .matches(/[A-Z]/)
+        .withMessage('Password must contain at least one uppercase letter')
+        .matches(/[a-z]/)
+        .withMessage('Password must contain at least one lowercase letter')
+        .matches(/[0-9]/)
+        .withMessage('Password must contain at least one number'),
+
+    async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json( {errors: errors.array()})
         }
-      },
+        
+        try {
+        const { firstname, lastname, username, password } = req.body;
+        const id = Number(req.params.userId);
+        const userId = (req.user as User).id;
+        if( id !== userId){
+          return res.status(401).json({ message: "Cannot change another user"});
+        }
+        if (!firstname || !lastname || !username || !password) {
+          return res.status(400).json({ message: "All fields are required" });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await userQueries.updateUser(id, firstname, lastname, username, hashedPassword);
+        return res.status(200).json({
+            mesaage: 'Member created sucessfully'
+        });
+            }  catch (error) {
+              console.error("Error updating user:", error);
+              return res.status(500).json({ message: "Internal server error" });
+            }
+        }
+    ],
       delete: async (req: Request, res: Response) => {
         try {
           const id = Number(req.params.userId);
