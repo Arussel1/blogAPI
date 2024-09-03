@@ -15,7 +15,7 @@ export interface Post{
     content: string;
     authorId: number,
     published: boolean;
-    image: string;
+    image: string | null;
 }
 
 export interface Comment{
@@ -145,11 +145,9 @@ export class PostQueries {
   }
     async getPostById( postId: number): Promise<Post | null> {
         try {
-            const post = await this.prisma.post.findFirst({
-                where: {
-                   id: postId,
-                   published: true
-                }
+            const post =await this.prisma.post.findFirst({
+              where: { id: postId, published: true },
+              select: { id: true, title: true, createdAt: true, content: true, authorId: true, published: true, image: true },
             });
             return post;
         } catch (error){
@@ -157,7 +155,7 @@ export class PostQueries {
             throw new Error("Internal server error");
         }
     }
-    async addPost( authorId: number, title: string, content: string, published: boolean, image: string ): Promise<boolean> {
+    async addPost(authorId: number, title: string, content: string, published: boolean, image?: string): Promise<boolean> {
       try {
         const createPost = await this.prisma.post.create({
           data: {
@@ -168,11 +166,11 @@ export class PostQueries {
             image
           }
         });
-  
+    
         return !!createPost;
       } catch (error) {
         console.error("Error adding post:", error);
-        throw new Error("Internal server error"); 
+        throw new Error("Internal server error");
       }
     }
     async updatePost(postId: number, authorId: number, title: string, content: string ): Promise<Boolean> {

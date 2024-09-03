@@ -39,7 +39,7 @@ model Post {
   authorId  Int
   published Boolean   @default(false)
   comments  Comment[]
-  image     String
+  image     String?
 }
 
 model Comment {
